@@ -8,6 +8,9 @@ export interface Activity {
   start: number;
   end: number;
   room: string;
+  capacity: number;
+  // Seats held by students outside this prototype, so the counts look lived-in.
+  baseTaken: number;
 }
 
 export interface Course {
@@ -25,6 +28,14 @@ const minutes = (hhmm: string) => {
   return h * 60 + m;
 };
 
+// Deterministic 30–85% fill per class. The first option of every course is
+// always full (set in course()) so the full state can be demonstrated.
+function simulatedDemand(id: string, capacity: number) {
+  let hash = 2166136261;
+  for (const ch of id) hash = Math.imul(hash ^ ch.charCodeAt(0), 16777619) >>> 0;
+  return Math.floor(capacity * (0.3 + (hash % 56) / 100));
+}
+
 function course(
   code: string,
   name: string,
@@ -33,15 +44,21 @@ function course(
   groups: Slot[],
 ): Course {
   const make = (kind: Activity["kind"], prefix: string) =>
-    ([day, start, end, room]: Slot, i: number): Activity => ({
-      id: `${code}-${prefix}${String(i + 1).padStart(2, "0")}`,
-      courseCode: code,
-      kind,
-      day,
-      start: minutes(start),
-      end: minutes(end),
-      room,
-    });
+    ([day, start, end, room]: Slot, i: number): Activity => {
+      const id = `${code}-${prefix}${String(i + 1).padStart(2, "0")}`;
+      const capacity = kind === "Lecture" ? 0 : kind === "Lab" ? 20 : 25;
+      return {
+        id,
+        courseCode: code,
+        kind,
+        day,
+        start: minutes(start),
+        end: minutes(end),
+        room,
+        capacity,
+        baseTaken: i === 0 ? capacity : simulatedDemand(id, capacity),
+      };
+    };
   return {
     code,
     name,

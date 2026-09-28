@@ -398,3 +398,131 @@ fieldset {
   border: 0;
   background: none;
 }
+
+/* Seats */
+.seats {
+  display: none;
+  font-weight: 600;
+}
+
+.option .seats {
+  display: block;
+}
+
+.option.full {
+  border-style: solid;
+  border-color: var(--line);
+  opacity: 0.55;
+  filter: grayscale(1);
+}
+
+.option.full button {
+  cursor: not-allowed;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface),
+    var(--surface) 6px,
+    var(--bg) 6px,
+    var(--bg) 12px
+  );
+}
+
+/* Day tabs: one day at a time on phones, full week otherwise */
+.day-tabs {
+  display: none;
+}
+
+@media (max-width: 40rem) {
+  .day-tabs:not([hidden]) {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .day-tabs button {
+    flex: 1;
+    padding: 0.45rem 0.2rem;
+    background: transparent;
+    color: var(--accent);
+  }
+
+  .day-tabs button[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .grid[data-day-view] {
+    grid-template-columns: 3.2rem 1fr;
+    min-width: 0;
+  }
+
+  .grid[data-day-view] .day:not(.shown) {
+    display: none;
+  }
+}
+
+/* Undo toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: 0.6rem 0.75rem 0.6rem 1rem;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: 0.5rem;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.25);
+  font-size: 0.92rem;
+}
+
+.toast[hidden],
+.toast button[hidden] {
+  display: none;
+}
+
+.toast button {
+  background: var(--bg);
+  color: var(--text);
+  border-color: var(--bg);
+}
+
+.toast button.secondary {
+  background: transparent;
+  color: var(--bg);
+}
+
+/* Edit page */
+.danger {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.danger-button {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+.notice {
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+}
+
+.block > span,
+.group button > span {
+  flex-shrink: 0;
+}
+
+@media (max-width: 40rem) {
+  .grid[data-day-view] {
+    --hour: 4.6rem;
+  }
+}

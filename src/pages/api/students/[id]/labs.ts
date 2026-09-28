@@ -6,11 +6,13 @@ export const POST: APIRoute = async ({ params, request, redirect }) => {
   const form = await request.formData();
   const course = String(form.get("course") ?? "");
   const activity = String(form.get("activity") ?? "");
-  if (!Number.isInteger(id) || !chooseLab(id, course, activity)) {
-    return new Response("That class isn't available for this student.", { status: 400 });
+  const result = Number.isInteger(id) ? chooseLab(id, course, activity) : "invalid";
+  const wantsJson = request.headers.get("accept") === "application/json";
+  if (result !== "ok") {
+    const message =
+      result === "full" ? "That class is full." : "That class isn't available for this student.";
+    const status = result === "full" ? 409 : 400;
+    return wantsJson ? Response.json({ error: result, message }, { status }) : new Response(message, { status });
   }
-  if (request.headers.get("accept") === "application/json") {
-    return Response.json({ ok: true });
-  }
-  return redirect(`/students/${id}#timetable`, 303);
+  return wantsJson ? Response.json({ ok: true }) : redirect(`/students/${id}#timetable`, 303);
 };

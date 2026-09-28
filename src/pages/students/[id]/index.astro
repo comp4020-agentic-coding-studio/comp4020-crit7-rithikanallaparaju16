@@ -1,8 +1,8 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import { type Activity, DAYS, describeSlot, findCourse, formatTime } from "../../lib/catalogue";
-import { getTimetable } from "../../lib/db";
-import { placeDay } from "../../lib/layout";
+import Layout from "../../../layouts/Layout.astro";
+import { type Activity, DAYS, describeSlot, findCourse, formatTime } from "../../../lib/catalogue";
+import { getTimetable, seatsTaken } from "../../../lib/db";
+import { placeDay } from "../../../lib/layout";
 
 const data = getTimetable(Number(Astro.params.id));
 if (!data) {
@@ -11,6 +11,7 @@ if (!data) {
 const { student, courseCodes, labs } = data;
 const courses = courseCodes.map((code) => findCourse(code)!).filter(Boolean);
 const colour = new Map(courses.map((c, i) => [c.code, `c${i}`]));
+const seats = seatsTaken();
 
 // Without JavaScript, ?pick= opens one course's options; the script below
 // takes over from this starting state and opens/closes courses in place.
@@ -19,14 +20,22 @@ const open = courses.filter((c) => c.code === picked).map((c) => c.code);
 
 type Block =
   | { type: "lecture"; activity: Activity }
-  | { type: "group"; activity: Activity; chosen: boolean; visible: boolean; isOption: boolean };
+  | {
+      type: "group";
+      activity: Activity;
+      chosen: boolean;
+      visible: boolean;
+      isOption: boolean;
+      full: boolean;
+    };
 
 const blocks: Block[] = courses.flatMap((c) => [
   ...c.lectures.map((activity): Block => ({ type: "lecture", activity })),
   ...c.groups.map((activity): Block => {
     const chosen = labs.get(c.code) === activity.id;
     const isOption = open.includes(c.code);
-    return { type: "group", activity, chosen, isOption, visible: isOption || chosen };
+    const full = !chosen && seats[activity.id] >= activity.capacity;
+    return { type: "group", activity, chosen, isOption, visible: isOption || chosen, full };
   }),
 ]);
 
@@ -48,6 +57,8 @@ const styleFor = (a: Activity, place?: { lane: number; lanes: number }) =>
     `--lanes: ${place?.lanes ?? 1}`,
   ].join("; ");
 const timeOf = (a: Activity) => `${formatTime(a.start)}–${formatTime(a.end)}`;
+const seatText = (taken: number, capacity: number, full: boolean) =>
+  full ? `Full · ${taken}/${capacity}` : `${taken}/${capacity} seats`;
 const unchosen = courses.filter((c) => !labs.has(c.code)).length;
 const progressText = (n: number) =>
   n === 0 ? "every class registered" : `${n} still to choose`;
@@ -57,7 +68,8 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
 <Layout title={student.name}>
   <h1>{student.name}</h1>
   <p class="muted">
-    {courses.length} courses · <span id="progress">{progressText(unchosen)}</span>
+    {courses.length} courses · <span id="progress">{progressText(unchosen)}</span> ·{" "}
+    <a href={`/students/${student.id}/edit`}>Edit courses</a>
   </p>
 
   <div
@@ -113,19 +125,29 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
             : defaultHint
         }
       </p>
+      <div class="day-tabs" role="group" aria-label="Day to show" hidden>
+        {
+          DAYS.map((name, i) => (
+            <button type="button" data-day={i} aria-pressed="false">
+              {name.slice(0, 3)} <span class="count"></span>
+            </button>
+          ))
+        }
+      </div>
       <div class="grid-scroll">
         <div class="grid" style={`--hours: ${hours.length}`}>
           <div class="hours" aria-hidden="true">
             {hours.map((h) => <span>{formatTime(h)}</span>)}
           </div>
           {
-            days.map((day) => (
-              <section class="day" aria-label={day.name}>
+            days.map((day, i) => (
+              <section class="day" aria-label={day.name} data-day={i}>
                 <h3 class="day-name">{day.name.slice(0, 3)}</h3>
                 <ol class="day-body">
                   {day.blocks.map(({ block, place }) => {
                     const a = block.activity;
                     const style = styleFor(a, place);
+                    const name = findCourse(a.courseCode)?.name;
                     if (block.type === "lecture") {
                       return (
                         <li
@@ -135,7 +157,7 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
                           data-end={a.end}
                         >
                           <span>
-                            <strong>{a.courseCode}</strong> {findCourse(a.courseCode)?.name}
+                            <strong>{a.courseCode}</strong> {name}
                           </span>
                           <span>Lecture · {timeOf(a)}</span>
                           <span class="small">{a.room}</span>
@@ -147,7 +169,7 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
                         class:list={[
                           "block group",
                           colour.get(a.courseCode),
-                          { option: block.isOption, current: block.chosen },
+                          { option: block.isOption, current: block.chosen, full: block.full },
                         ]}
                         style={style}
                         hidden={!block.visible}
@@ -155,18 +177,22 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
                         data-activity={a.id}
                         data-start={a.start}
                         data-end={a.end}
-                        data-label={describeSlot(a)}
+                        data-capacity={a.capacity}
+                        data-taken={seats[a.id]}
+                        data-label={`${a.courseCode} ${a.kind} · ${describeSlot(a)}`}
+                        data-slot={describeSlot(a)}
                       >
                         <form method="post" action={`/api/students/${student.id}/labs`}>
                           <input type="hidden" name="course" value={a.courseCode} />
                           <input type="hidden" name="activity" value={a.id} />
-                          <button aria-pressed={block.chosen ? "true" : "false"}>
+                          <button aria-pressed={block.chosen ? "true" : "false"} disabled={block.isOption && block.full}>
                             <span class="sr-only">{a.courseCode} {a.kind.toLowerCase()}, {DAYS[a.day]}</span>
                             <span>
                               <span class="tick" aria-hidden="true">✓ </span>
-                              <strong>{a.courseCode}</strong> {findCourse(a.courseCode)?.name}
+                              <strong>{a.courseCode}</strong> {name}
                             </span>
                             <span>{a.kind} · {timeOf(a)}</span>
+                            <span class="small seats">{seatText(seats[a.id], a.capacity, block.full)}</span>
                             <span class="small">{a.room}</span>
                           </button>
                         </form>
@@ -181,51 +207,88 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
       </div>
     </section>
   </div>
+
+  <div class="toast" id="toast" role="status" hidden>
+    <span id="toast-text"></span>
+    <button type="button" id="toast-undo">Undo</button>
+    <button type="button" id="toast-close" class="secondary" aria-label="Dismiss">✕</button>
+  </div>
 </Layout>
 
 <script>
-  import { placeDay } from "../../lib/layout";
+  import { placeDay } from "../../../lib/layout";
 
   const root = document.querySelector<HTMLElement>(".planner[data-student]");
   if (root) {
-    const studentId = root.dataset.student;
+    const studentId = Number(root.dataset.student);
     const labs = new Map<string, string>(JSON.parse(root.dataset.labs ?? "[]"));
     const open = new Set<string>(JSON.parse(root.dataset.open ?? "[]"));
     const groupBlocks = [...root.querySelectorAll<HTMLElement>(".block.group")];
+    const seats = new Map(groupBlocks.map((el) => [el.dataset.activity!, Number(el.dataset.taken)]));
     const cards = [...root.querySelectorAll<HTMLElement>(".course[data-course]")];
     const hint = root.querySelector<HTMLElement>("#hint")!;
     const progress = document.querySelector<HTMLElement>("#progress")!;
+    const grid = root.querySelector<HTMLElement>(".grid")!;
+    const tabs = root.querySelector<HTMLElement>(".day-tabs")!;
+    const toast = document.querySelector<HTMLElement>("#toast")!;
+    const toastText = document.querySelector<HTMLElement>("#toast-text")!;
+    const undoButton = document.querySelector<HTMLButtonElement>("#toast-undo")!;
+    const narrow = window.matchMedia("(max-width: 40rem)");
+    const today = new Date().getDay() - 1;
+    let shownDay = today >= 0 && today < 5 ? today : 0;
+    let lastChange: { course: string; previous: string | null } | undefined;
+    let toastTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const blockFor = (activity?: string) => groupBlocks.find((el) => el.dataset.activity === activity);
 
     const render = () => {
       for (const el of groupBlocks) {
         const course = el.dataset.course!;
         const chosen = labs.get(course) === el.dataset.activity;
         const isOpen = open.has(course);
+        const taken = seats.get(el.dataset.activity!) ?? 0;
+        const capacity = Number(el.dataset.capacity);
+        const full = !chosen && taken >= capacity;
         el.hidden = !isOpen && !chosen;
         el.classList.toggle("option", isOpen);
         el.classList.toggle("current", chosen);
-        el.querySelector("button")?.setAttribute("aria-pressed", String(chosen));
+        el.classList.toggle("full", full);
+        const button = el.querySelector("button")!;
+        button.setAttribute("aria-pressed", String(chosen));
+        button.disabled = isOpen && full;
+        el.querySelector(".seats")!.textContent = full
+          ? `Full · ${taken}/${capacity}`
+          : `${taken}/${capacity} seats`;
       }
       for (const el of root.querySelectorAll<HTMLElement>(".block.lecture")) {
         el.classList.toggle("dimmed", open.size > 0);
       }
-      for (const body of root.querySelectorAll<HTMLElement>(".day-body")) {
-        const visible = [...body.querySelectorAll<HTMLElement>(".block")]
+      const optionsPerDay = [0, 0, 0, 0, 0];
+      for (const day of root.querySelectorAll<HTMLElement>(".day")) {
+        const index = Number(day.dataset.day);
+        day.classList.toggle("shown", index === shownDay);
+        const visible = [...day.querySelectorAll<HTMLElement>(".block")]
           .filter((el) => !el.hidden)
           .map((el) => ({ el, activity: { start: Number(el.dataset.start), end: Number(el.dataset.end) } }));
+        optionsPerDay[index] = visible.filter((v) => v.el.classList.contains("option")).length;
         for (const { item, lane, lanes } of placeDay(visible)) {
           item.el.style.setProperty("--lane", String(lane));
           item.el.style.setProperty("--lanes", String(lanes));
         }
       }
+      for (const tab of tabs.querySelectorAll<HTMLElement>("button")) {
+        const index = Number(tab.dataset.day);
+        tab.setAttribute("aria-pressed", String(index === shownDay));
+        tab.querySelector(".count")!.textContent = optionsPerDay[index] ? `(${optionsPerDay[index]})` : "";
+      }
       for (const card of cards) {
         const course = card.dataset.course!;
         const kind = card.dataset.kind!;
         const isOpen = open.has(course);
-        const chosen = groupBlocks.find((el) => el.dataset.activity === labs.get(course));
+        const chosen = blockFor(labs.get(course));
         card.classList.toggle("active", isOpen);
         const status = card.querySelector(".lab-status")!;
-        if (chosen) status.textContent = chosen.dataset.label ?? "";
+        if (chosen) status.textContent = chosen.dataset.slot ?? "";
         else status.innerHTML = "<em>not chosen yet</em>";
         const toggle = card.querySelector<HTMLElement>(".toggle")!;
         toggle.classList.toggle("secondary", isOpen);
@@ -234,9 +297,72 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
       const left = cards.filter((c) => !labs.has(c.dataset.course!)).length;
       progress.textContent = left === 0 ? "every class registered" : `${left} still to choose`;
       hint.textContent = open.size
-        ? `Showing every ${[...open].join(", ")} time. Dashed blocks are options — click one to choose it.`
+        ? `Showing every ${[...open].join(", ")} time. Dashed blocks are options — click one to choose it. Greyed-out classes are full.`
         : (root.dataset.defaultHint ?? "");
+      return optionsPerDay;
     };
+
+    const showToast = (text: string, canUndo: boolean) => {
+      toastText.textContent = text;
+      undoButton.hidden = !canUndo;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => (toast.hidden = true), 10_000);
+    };
+
+    const save = async (course: string, activity: string | null) => {
+      const body = new FormData();
+      body.set("course", course);
+      body.set("activity", activity ?? "");
+      const res = await fetch(`/api/students/${studentId}/labs`, {
+        method: "POST",
+        headers: { accept: "application/json" },
+        body,
+      }).catch(() => undefined);
+      if (res?.ok) return { ok: true as const };
+      const data = await res?.json().catch(() => undefined);
+      return { ok: false as const, full: data?.error === "full" };
+    };
+
+    const setChoice = (course: string, activity: string | null) => {
+      if (activity) labs.set(course, activity);
+      else labs.delete(course);
+    };
+
+    const choose = async (course: string, activity: string) => {
+      const previous = labs.get(course) ?? null;
+      setChoice(course, activity);
+      open.delete(course);
+      render();
+      const result = await save(course, activity);
+      if (!result.ok) {
+        setChoice(course, previous);
+        open.add(course);
+        render();
+        showToast(result.full ? "Sorry, that class just filled up." : "That choice couldn't be saved — try again.", false);
+        return;
+      }
+      lastChange = { course, previous };
+      showToast(`Chose ${blockFor(activity)?.dataset.label}.`, true);
+    };
+
+    undoButton.addEventListener("click", async () => {
+      if (!lastChange) return;
+      const { course, previous } = lastChange;
+      lastChange = undefined;
+      const current = labs.get(course) ?? null;
+      setChoice(course, previous);
+      render();
+      const result = await save(course, previous);
+      if (!result.ok) {
+        setChoice(course, current);
+        render();
+        showToast(result.full ? "Couldn't undo — your old class is now full." : "Couldn't undo — try again.", false);
+        return;
+      }
+      showToast(previous ? `Back to ${blockFor(previous)?.dataset.label}.` : `Removed your ${course} choice.`, false);
+    });
+    document.querySelector("#toast-close")?.addEventListener("click", () => (toast.hidden = true));
 
     for (const card of cards) {
       card.querySelector(".toggle")?.addEventListener("click", (event) => {
@@ -244,12 +370,21 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
         const course = card.dataset.course!;
         if (open.has(course)) open.delete(course);
         else open.add(course);
-        render();
+        const perDay = render();
+        // On a phone only one day shows, so jump to a day that has options.
+        if (narrow.matches && open.has(course)) {
+          if (!perDay[shownDay]) {
+            const first = perDay.findIndex((n) => n > 0);
+            if (first >= 0) shownDay = first;
+            render();
+          }
+          tabs.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       });
     }
 
     for (const el of groupBlocks) {
-      el.querySelector("form")?.addEventListener("submit", async (event) => {
+      el.querySelector("form")?.addEventListener("submit", (event) => {
         event.preventDefault();
         const course = el.dataset.course!;
         // Clicking a chosen block while its options are closed reopens them.
@@ -258,22 +393,38 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
           render();
           return;
         }
-        const previous = labs.get(course);
-        labs.set(course, el.dataset.activity!);
-        open.delete(course);
-        render();
-        const res = await fetch(`/api/students/${studentId}/labs`, {
-          method: "POST",
-          headers: { accept: "application/json" },
-          body: new FormData(event.target as HTMLFormElement),
-        }).catch(() => undefined);
-        if (!res?.ok) {
-          if (previous) labs.set(course, previous);
-          else labs.delete(course);
-          render();
-          hint.textContent = "That choice couldn't be saved — try again.";
-        }
+        choose(course, el.dataset.activity!);
       });
     }
+
+    for (const tab of tabs.querySelectorAll<HTMLElement>("button")) {
+      tab.addEventListener("click", () => {
+        shownDay = Number(tab.dataset.day);
+        render();
+      });
+    }
+    tabs.hidden = false;
+    grid.dataset.dayView = "";
+
+    // Live: seat counts from everyone, and this student's choices from other tabs.
+    const source = new EventSource("/api/events");
+    source.addEventListener("message", (event) => {
+      const update = JSON.parse(event.data) as {
+        studentId: number;
+        change?: { courseCode: string; activityId: string | null };
+        seats: Record<string, number>;
+      };
+      for (const [id, taken] of Object.entries(update.seats)) seats.set(id, taken);
+      if (update.studentId === studentId) {
+        if (!update.change) {
+          location.reload();
+          return;
+        }
+        setChoice(update.change.courseCode, update.change.activityId);
+      }
+      render();
+    });
+
+    render();
   }
 </script>

@@ -1,0 +1,52 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { COURSES, MAX_COURSES } from "../../../lib/catalogue";
+import { getTimetable } from "../../../lib/db";
+
+const data = getTimetable(Number(Astro.params.id));
+if (!data) {
+  return new Response("No such student", { status: 404 });
+}
+const { student, courseCodes, labs } = data;
+const error = Astro.url.searchParams.get("error");
+---
+
+<Layout title={`Edit ${student.name}`}>
+  <h1>Edit {student.name}</h1>
+  <p><a href={`/students/${student.id}`}>← Back to timetable</a></p>
+
+  {error && <p class="error" role="alert">Enter a name and choose 1 to {MAX_COURSES} courses.</p>}
+  <form method="post" action={`/api/students/${student.id}/edit`} class="new-student">
+    <label for="name">Name</label>
+    <input id="name" name="name" required maxlength="80" autocomplete="off" value={student.name} />
+    <fieldset>
+      <legend>Courses (up to {MAX_COURSES})</legend>
+      {
+        COURSES.map((c) => (
+          <label class="check">
+            <input type="checkbox" name="courses" value={c.code} checked={courseCodes.includes(c.code)} />
+            <span>
+              <strong>{c.code}</strong> {c.name}
+              {labs.has(c.code) && <span class="muted"> · dropping it gives up your {c.groupKind.toLowerCase()} seat</span>}
+            </span>
+          </label>
+        ))
+      }
+    </fieldset>
+    <button>Save changes</button>
+  </form>
+
+  <section aria-labelledby="danger-heading" class="danger">
+    <h2 id="danger-heading">Delete student</h2>
+    <p>Removes {student.name} and frees every seat they hold. This can't be undone.</p>
+    <form method="post" action={`/api/students/${student.id}/delete`} id="delete-form">
+      <button class="danger-button">Delete {student.name}</button>
+    </form>
+  </section>
+</Layout>
+
+<script>
+  document.querySelector("#delete-form")?.addEventListener("submit", (event) => {
+    if (!confirm("Delete this student? This can't be undone.")) event.preventDefault();
+  });
+</script>

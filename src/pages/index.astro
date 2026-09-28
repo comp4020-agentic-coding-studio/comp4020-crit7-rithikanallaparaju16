@@ -5,6 +5,7 @@ import { listStudents } from "../lib/db";
 
 const students = listStudents();
 const error = Astro.url.searchParams.get("error");
+const deleted = Astro.url.searchParams.get("deleted");
 ---
 
 <Layout title="Students">
@@ -14,6 +15,8 @@ const error = Astro.url.searchParams.get("error");
     lab or tutorial, every available time is laid over the timetable so you can
     choose around what's already there.
   </p>
+
+  {deleted && <p role="status" class="notice">Student deleted.</p>}
 
   <section aria-labelledby="students-heading">
     <h2 id="students-heading">Students</h2>
