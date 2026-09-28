@@ -21,6 +21,10 @@ good means here lives; this file is how you got there.
 
 ## How I got here
 
+Made my own test to check clashing classes, which I disapproved ([`59a6de4`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/59a6de4)).
+
+Added seat capacity (the first lab/tutorial of every course is full for testing and presenting), undo, live updates, a one-day-at-a-time phone view and editing or deleting students ([`8b78c33`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8b78c33)).
+
 The account of the process: how the work actually went, and how you knew the
 result was right. Tell it in whatever order makes it clear. A weekly prototype
 needs a paragraph or two; an assignment needs more.
