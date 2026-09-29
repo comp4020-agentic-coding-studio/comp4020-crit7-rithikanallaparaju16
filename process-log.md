@@ -3,6 +3,16 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`eed6fa9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/eed6fa9): seats on chosen classes, Playwright viewport tests
+
+Chosen classes now show their seat count, and `pnpm test:browser` checks all five
+viewports in real Chrome. Proved the tests work by re-adding the old hidden-options
+and 280px bugs: 6 tests failed, then all 12 passed once fixed. Dev server now reachable on Wi-Fi.
+
+> - Make the phone view the default for the week view. Test 11 is the one most likely to feel awkward, so it's worth trying on your actual phone. Your laptop's address on your Wi-Fi, port 4321, should reach the dev server.
+> - Show the seat count on your chosen class too, so students know how close it is to full.
+> - Automated tests for real browsers. The CSS "hidden" bug and this 280px overflow were both invisible to the current tests. A small Playwright test at your three viewports would enforce the CLAUDE.md rule automatically. It's a new dev dependency, so it's your call. do all of these, and these are tests for you, you dont have to test everything just the new feature you added should be good
+
 ## [`7de6859`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/7de6859): harness rules, commit log, viewport fixes
 
 Wrote CLAUDE.md rules (portrait + landscape viewports, two-window live checks,

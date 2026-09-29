@@ -20,3 +20,22 @@ if [ -n "$hits" ]; then
 	echo "rotated: post on Ed." >&2
 	exit 1
 fi
+
+# No commits while tests are red: the whole suite, including the real-browser
+# viewport checks, must pass. It runs against the working tree.
+if command -v mise >/dev/null 2>&1; then
+	run="mise exec -- pnpm"
+else
+	run="pnpm"
+fi
+echo "pre-commit: running tests (pnpm check, pnpm test:browser)..." >&2
+if ! $run check >/tmp/pre-commit-check.log 2>&1; then
+	echo "commit blocked: pnpm check failed (see /tmp/pre-commit-check.log)" >&2
+	tail -20 /tmp/pre-commit-check.log >&2
+	exit 1
+fi
+if ! $run test:browser >/tmp/pre-commit-browser.log 2>&1; then
+	echo "commit blocked: pnpm test:browser failed (see /tmp/pre-commit-browser.log)" >&2
+	tail -20 /tmp/pre-commit-browser.log >&2
+	exit 1
+fi

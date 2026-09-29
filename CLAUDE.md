@@ -37,6 +37,14 @@ These are the rules I hold the agent to on this project.
   anything nearby it could have broken.
 - Mark which cases need two windows, a phone-sized window, or landscape.
 
+## Never commit on red
+
+- No commit while any test fails: `pnpm check` and `pnpm test:browser` must
+  both be green. The pre-commit hook in `.githooks/pre-commit` enforces this;
+  never bypass it with `--no-verify`.
+- If a test fails, fix the code, or fix the test if it is genuinely wrong and
+  say why. Never delete or loosen a test just to get a commit through.
+
 ## Log every commit for PROCESS.md
 
 - After every commit, add an entry to `process-log.md` with the short hash
