@@ -3,6 +3,13 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`3e10762`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/3e10762): remove PROCESS.md boilerplate
+
+Deleted the template comment, intro and "Before you ship" section, leaving only my
+two sections (296 words); `pnpm check:evidence` now passes every check.
+
+> yes delete the boilerplate and push
+
 ## [`6a555fd`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/6a555fd): crit 7 reflection, log entry for cc85c23
 
 Committed the first draft of `reflections/crit-7.md` (102 words, below the 150 minimum)

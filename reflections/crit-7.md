@@ -11,5 +11,10 @@ is full.
 
 ## 2. What did this work change about who I want to be as a software developer?
 
-Shows the classes while choosing labs and makes the user's understanding of
-their timetable easy and better to choose.
+I like my software to be more reliable and easier to understand for the users,
+to make their experience better and help them understand the task they are doing
+better. For reliability, I made the agent check every change on five screen
+sizes, including landscape because students hold their phones sideways, and I
+blocked any commit while tests fail. This app shows the classes while choosing
+labs and makes the user's understanding of their timetable easy and better to
+choose.
