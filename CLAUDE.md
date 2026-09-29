@@ -45,12 +45,28 @@ These are the rules I hold the agent to on this project.
 - If a test fails, fix the code, or fix the test if it is genuinely wrong and
   say why. Never delete or loosen a test just to get a commit through.
 
+## Run the CI checks before shipping
+
+- CI skips every job while the repo is private, so before `/ship` makes it
+  public, run what CI runs on a **fresh clone of what's on GitHub**, not the
+  working folder: `pnpm install --frozen-lockfile`, `pnpm check`,
+  `pnpm check:evidence`, and the course-key scan from `.github/trufflehog.yml`
+  over the full history.
+- Rehearse the deploy too: build the way the `Dockerfile` does (production
+  build, then `pnpm prune --prod`), run that server, and repeat the deploy
+  job's checks against it: the site returns 200, `/api/events` streams, a
+  same-origin POST isn't refused, a cross-site POST is, and linkinator finds no
+  broken internal links.
+- Don't ship until every check passes, and report each result. If a check
+  can't be run locally, say which and what covers it instead.
+
 ## Log every commit for PROCESS.md
 
 - After every commit, add an entry to `process-log.md` with the short hash
   linked to its commit on GitHub, two lines on what changed and why, and my
   prompt(s) that led to it, quoted verbatim, typos and all.
 - A commit can't contain its own hash, so the new entry goes into the next
-  commit. Never amend a commit to add it.
+  commit. Never amend a commit to add it. A commit that only adds log entries
+  doesn't get an entry of its own.
 - Newest entry first. This log is my raw material for PROCESS.md; don't
   edit PROCESS.md from it unless I ask.
