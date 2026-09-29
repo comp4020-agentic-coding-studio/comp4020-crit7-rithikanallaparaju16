@@ -65,7 +65,7 @@ const progressText = (n: number) =>
 const defaultHint = "Lectures are already on your week. Choose a lab or tutorial to see every time it runs.";
 ---
 
-<Layout title={student.name}>
+<Layout title={student.name} wide>
   <h1>{student.name}</h1>
   <p class="muted">
     {courses.length} courses · <span id="progress">{progressText(unchosen)}</span> ·{" "}
@@ -234,6 +234,7 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
     const toastText = document.querySelector<HTMLElement>("#toast-text")!;
     const undoButton = document.querySelector<HTMLButtonElement>("#toast-undo")!;
     const narrow = window.matchMedia("(max-width: 40rem)");
+    const stacked = window.matchMedia("(max-width: 60rem)");
     const today = new Date().getDay() - 1;
     let shownDay = today >= 0 && today < 5 ? today : 0;
     let lastChange: { course: string; previous: string | null } | undefined;
@@ -371,14 +372,21 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
         if (open.has(course)) open.delete(course);
         else open.add(course);
         const perDay = render();
+        if (!open.has(course)) return;
         // On a phone only one day shows, so jump to a day that has options.
-        if (narrow.matches && open.has(course)) {
+        if (narrow.matches) {
           if (!perDay[shownDay]) {
             const first = perDay.findIndex((n) => n > 0);
             if (first >= 0) shownDay = first;
             render();
           }
           tabs.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (stacked.matches) {
+          // Cards sit above the week (e.g. a phone in landscape): bring the earliest option into view.
+          const earliest = groupBlocks
+            .filter((el) => el.dataset.course === course)
+            .sort((a, b) => Number(a.dataset.start) - Number(b.dataset.start))[0];
+          earliest?.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       });
     }
