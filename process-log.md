@@ -3,6 +3,13 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`08a8a83`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/08a8a83): CI rehearsal rule before shipping
+
+CI skips while the repo is private, so CLAUDE.md now requires rerunning the check and
+deploy jobs locally on a fresh clone from GitHub before the public flip.
+
+> run Ci checks befire shipping, add in claude.md
+
 ## [`3e10762`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/3e10762): remove PROCESS.md boilerplate
 
 Deleted the template comment, intro and "Before you ship" section, leaving only my
