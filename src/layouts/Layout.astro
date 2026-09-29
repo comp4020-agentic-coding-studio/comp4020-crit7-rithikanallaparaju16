@@ -14,14 +14,57 @@ const { title, wide = false } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} · Timetable</title>
+    <script is:inline>
+      // Apply a saved theme before first paint so the page doesn't flash.
+      try {
+        const theme = localStorage.getItem("theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
   </head>
   <body>
     <nav aria-label="site">
       <a href="/">Students</a>
       <a href="/readme/">About</a>
+      <button type="button" class="theme-toggle" id="theme-toggle" hidden>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="4"></circle>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+          <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path>
+        </svg>
+        <span class="label">Dark mode</span>
+      </button>
     </nav>
     <main class:list={{ wide }}>
       <slot />
     </main>
+    <script>
+      const button = document.querySelector<HTMLButtonElement>("#theme-toggle");
+      if (button) {
+        const root = document.documentElement;
+        const system = window.matchMedia("(prefers-color-scheme: dark)");
+        const current = () => root.dataset.theme ?? (system.matches ? "dark" : "light");
+        // The button names the theme it switches to, with that theme's icon.
+        const paint = () => {
+          const next = current() === "dark" ? "light" : "dark";
+          button.querySelector(".label")!.textContent = next === "dark" ? "Dark mode" : "Light mode";
+          button.querySelector<SVGElement>(".icon-moon")!.style.display = next === "dark" ? "" : "none";
+          button.querySelector<SVGElement>(".icon-sun")!.style.display = next === "light" ? "" : "none";
+        };
+        button.addEventListener("click", () => {
+          const next = current() === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          try {
+            localStorage.setItem("theme", next);
+          } catch {}
+          paint();
+        });
+        system.addEventListener("change", paint);
+        paint();
+        button.hidden = false;
+      }
+    </script>
   </body>
 </html>

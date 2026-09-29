@@ -18,8 +18,10 @@
   color-scheme: light;
 }
 
+/* Dark follows the system unless the viewer picked a theme with the toggle,
+   which sets data-theme on <html>; the tokens are repeated for each route. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #161616;
     --surface: #202020;
     --text: #ececec;
@@ -39,6 +41,25 @@
   }
 }
 
+:root[data-theme="dark"] {
+  --bg: #161616;
+  --surface: #202020;
+  --text: #ececec;
+  --muted: #a9a9a9;
+  --line: #3a3a3a;
+  --accent: #8ab4f8;
+  --danger: #f2b8b5;
+  --c0: #8ab4f8;
+  --c0-soft: #1d2b44;
+  --c1: #f5a97a;
+  --c1-soft: #3d2618;
+  --c2: #7fd1a0;
+  --c2-soft: #173325;
+  --c3: #c9a4f0;
+  --c3-soft: #30213f;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -53,6 +74,7 @@ body {
 
 nav {
   display: flex;
+  align-items: center;
   gap: 1.25rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--line);
@@ -546,4 +568,52 @@ fieldset {
   .grid {
     --hour: 4.9rem;
   }
+}
+
+/* Theme toggle, top right of the nav */
+.theme-toggle {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  background: transparent;
+  color: var(--accent);
+}
+
+.theme-toggle[hidden] {
+  display: none;
+}
+
+.theme-toggle svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+@media (max-width: 22rem) {
+  .theme-toggle .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}
+
+/* Calendar export */
+.calendar-export {
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  max-width: 48rem;
+}
+
+.calendar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-block: 0.75rem;
 }

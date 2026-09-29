@@ -15,6 +15,12 @@ choices update live in every open tab. On a phone the week shows one day at a
 time, with day tabs that count the options on each day. A student's name and
 courses can be edited, and a student can be deleted, from "Edit courses".
 
+"Add to your calendar" subscribes Google Calendar or Apple Calendar to the
+student's timetable as a live feed, with lectures and chosen classes repeating
+weekly. When a class changes here, the calendar drops the old time and adds the
+new one at its next sync, so nothing needs deleting and re-adding. A switch at
+the top right changes between light and dark mode, and the choice is remembered.
+
 Students, their courses and their lab choices are saved in SQLite. Four test
 students, each with two lab courses and two tutorial courses, are created the
 first time the app starts on an empty database.
@@ -42,5 +48,6 @@ and whether the phone view works in the hand, are judgement calls for testing
 with people.
 
 Not built: real logins (clicking a name stands in for logging in), waitlists,
-and a real course catalogue. The seven courses in `src/lib/catalogue.ts` and
+a real course catalogue, and real semester dates (the calendar uses sample
+dates, 27 July to 30 October 2026). The seven courses in `src/lib/catalogue.ts` and
 their "seats taken by other students" are made-up sample data.

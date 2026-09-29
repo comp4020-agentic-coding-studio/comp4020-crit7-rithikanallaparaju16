@@ -63,13 +63,20 @@ const unchosen = courses.filter((c) => !labs.has(c.code)).length;
 const progressText = (n: number) =>
   n === 0 ? "every class registered" : `${n} still to choose`;
 const defaultHint = "Lectures are already on your week. Choose a lab or tutorial to see every time it runs.";
+
+const feed = new URL(`/api/students/${student.id}/calendar.ics`, Astro.url);
+const webcal = feed.href.replace(/^https?:/, "webcal:");
+const googleCalendar = `https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal)}`;
+// Google fetches the feed from its own servers, so it can't reach a local dev server.
+const localOnly = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(feed.hostname);
 ---
 
 <Layout title={student.name} wide>
   <h1>{student.name}</h1>
   <p class="muted">
     {courses.length} courses · <span id="progress">{progressText(unchosen)}</span> ·{" "}
-    <a href={`/students/${student.id}/edit`}>Edit courses</a>
+    <a href={`/students/${student.id}/edit`}>Edit courses</a> ·{" "}
+    <a href="#calendar">Add to calendar</a>
   </p>
 
   <div
@@ -208,6 +215,31 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
       </div>
     </section>
   </div>
+
+  <section aria-labelledby="calendar-heading" class="calendar-export" id="calendar">
+    <h2 id="calendar-heading">Add to your calendar</h2>
+    <p>
+      Your lectures and chosen classes, repeating every week of the semester. This is a live
+      calendar: when you change a class here, your calendar deletes the old time and adds the new
+      one the next time it syncs. If you've added it before, there's no need to add it again.
+    </p>
+    <div class="calendar-buttons">
+      <a class="button" href={googleCalendar} target="_blank" rel="noopener">Add to Google Calendar</a>
+      <a class="button" href={webcal}>Add to Apple Calendar</a>
+    </div>
+    <p class="small muted">
+      Apple Calendar checks for changes as often as you choose when subscribing; Google Calendar
+      checks every few hours and can't be made faster. Classes you haven't chosen yet appear once
+      you choose them.
+    </p>
+    {
+      localOnly && (
+        <p class="small muted">
+          Google Calendar needs the deployed site: it can't reach a copy running on this computer.
+        </p>
+      )
+    }
+  </section>
 
   <div class="toast" id="toast" role="status" hidden>
     <span id="toast-text"></span>

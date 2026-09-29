@@ -16,36 +16,45 @@ cover every deliverable.
 
 ## What I built
 
-A sentence or two. `README.md` is where the account of what the app is and what
-good means here lives; this file is how you got there.
+I built a fix for ANU's timetabling app. Lectures are already there because they
+are compulsory, and when you choose a lab or tutorial, all its options are
+overlaid on your existing timetable, so you can see what clashes and by how
+much, along with a live count of the seats left.
 
 ## How I got here
 
-Made my own test to check clashing classes, which I disapproved ([`59a6de4`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/59a6de4)).
+ANU's timetable app makes you pick labs from a text list, so you have to
+remember your week and trust the word "clash". I asked for the options to go on
+the timetable instead:
 
-Added seat capacity (the first lab/tutorial of every course is full for testing and presenting), undo, live updates, a one-day-at-a-time phone view and editing or deleting students ([`8b78c33`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8b78c33)).
+> as soon as i click on a courses "labs" it has to overlay all the timing for me, then i can literally see what i chose before and then choose according to that
 
-The account of the process: how the work actually went, and how you knew the
-result was right. Tell it in whatever order makes it clear. A weekly prototype
-needs a paragraph or two; an assignment needs more.
+The agent's first version flagged clashes in red and tested for them. I
+disapproved of that:
 
-Cite the record as you go, as links whose text is the commit hash or range and
-whose target is this repo's commit or compare URL, so a reader clicks straight
-to the evidence:
+> it's okay if they clash because universities can't guarantee all students not clashing
 
-- one commit: [`a1b2c3d`](https://github.com/YOUR-ORG/YOUR-REPO/commit/a1b2c3d)
-- a range:
-  [`a1b2c3d...e4f5a6b`](https://github.com/YOUR-ORG/YOUR-REPO/compare/a1b2c3d...e4f5a6b)
+I also wanted the options to stay on screen, without reloading, until I picked
+one. [`59a6de4`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/59a6de4) placed lectures automatically, overlaid every
+option and tested that a clashing choice is accepted. [`8b78c33`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8b78c33)
+then added seat counts (every course's first option is always full, for
+demos), undo, live updates across tabs, a one-day phone view and student
+editing.
 
-To pair a prompt with the commit it produced, quote the prompt (curated, not a
-full transcript) next to the citation:
+Next, I wrote my rules into `CLAUDE.md` ([`7de6859`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/7de6859)): check five
+viewports, check live updates in two windows, and give me test cases after
+every update. I included landscape after pointing out:
 
-> the prompt, verbatim
+> timetable will be accessed side ways for students mostly
 
-Screenshots are welcome where one carries the point better than a sentence does.
-Commit the file to this repo and link it with a **relative** path, which is what
-makes it render on GitHub: `![alt text](docs/before.png)`. Images don't count
-towards the word count and don't replace the citation.
+Screenshots caught two bugs the tests missed (hidden options still showing
+and a 280px overflow), so [`eed6fa9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/eed6fa9) added Playwright tests that
+catch both. Finally, I asked:
+
+> i dont want any commits when tests are red
+
+so [`8e58ba2`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8e58ba2) added a pre-commit hook that blocks commits
+unless every test passes.
 
 ## Before you ship
 

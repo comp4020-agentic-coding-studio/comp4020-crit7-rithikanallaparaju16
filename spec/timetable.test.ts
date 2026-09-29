@@ -212,4 +212,64 @@ describe("timetable", () => {
     await reader.cancel();
     expect(received).toContain(`"studentId":${id}`);
   }, 10_000);
+
+  describe("calendar feed", () => {
+    const feed = async (id: string) => {
+      const res = await fetch(new URL(`/api/students/${id}/calendar.ics`, baseUrl));
+      return { res, text: await res.text() };
+    };
+    const summaries = (ics: string) => [...ics.matchAll(/^SUMMARY:(.*)\r$/gm)].map((m) => m[1]);
+    const choose = (id: string, course: string, activity: string) =>
+      post(`/api/students/${id}/labs`, new URLSearchParams({ course, activity }));
+
+    it("holds the lectures and chosen classes, not unchosen options", async () => {
+      const path = await createStudent("Feed Check", ["COMP1100", "MATH1005"]);
+      const id = path.split("/").pop()!;
+      await choose(id, "COMP1100", "COMP1100-LAB04");
+      const { res, text } = await feed(id);
+      expect(res.headers.get("content-type")).toContain("text/calendar");
+      expect(text.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
+      expect(text).toContain("TZID:Australia/Sydney");
+      expect(summaries(text).sort()).toEqual([
+        "COMP1100 Lab",
+        "COMP1100 Lecture",
+        "COMP1100 Lecture",
+        "MATH1005 Lecture",
+        "MATH1005 Lecture",
+      ]);
+      expect(text).toContain("RRULE:FREQ=WEEKLY");
+    });
+
+    it("drops the old class when the student swaps it, and a dropped course's classes", async () => {
+      const path = await createStudent("Swap Feed Check", ["COMP1100", "ECON1101"]);
+      const id = path.split("/").pop()!;
+      await choose(id, "COMP1100", "COMP1100-LAB04");
+      expect((await feed(id)).text).toContain(`UID:COMP1100-LAB04-student${id}@`);
+      await choose(id, "COMP1100", "COMP1100-LAB05");
+      const swapped = (await feed(id)).text;
+      expect(swapped).toContain(`UID:COMP1100-LAB05-student${id}@`);
+      expect(swapped).not.toContain("COMP1100-LAB04");
+      const body = new URLSearchParams({ name: "Swap Feed Check" });
+      body.append("courses", "COMP1100");
+      await post(`/api/students/${id}/edit`, body);
+      expect(summaries((await feed(id)).text).some((s) => s.startsWith("ECON1101"))).toBe(false);
+    });
+
+    it("is linked from the timetable for Google and Apple Calendar", async () => {
+      const path = await createStudent("Link Check", ["COMP1100"]);
+      const id = path.split("/").pop()!;
+      const { doc } = await page(path);
+      const links = [...doc.querySelectorAll<HTMLAnchorElement>(".calendar-buttons a")];
+      const google = links.find((a) => a.textContent?.includes("Google"))!;
+      const apple = links.find((a) => a.textContent?.includes("Apple"))!;
+      const webcal = new URL(`/api/students/${id}/calendar.ics`, baseUrl).href.replace(/^http:/, "webcal:");
+      expect(apple.getAttribute("href")).toBe(webcal);
+      expect(new URL(google.getAttribute("href")!).searchParams.get("cid")).toBe(webcal);
+    });
+
+    it("404s for a student who doesn't exist", async () => {
+      expect((await feed("999999")).res.status).toBe(404);
+    });
+  });
 });
+

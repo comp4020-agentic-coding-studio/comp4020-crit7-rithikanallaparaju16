@@ -3,6 +3,13 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`8e58ba2`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8e58ba2): block commits while tests are red
+
+The pre-commit hook now runs `pnpm check` and `pnpm test:browser`; a deliberately
+broken assertion made it exit 1 and refuse the commit. CLAUDE.md bans `--no-verify` and loosening tests.
+
+> what else can we add here? i dont want any commits when tests are red
+
 ## [`eed6fa9`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/eed6fa9): seats on chosen classes, Playwright viewport tests
 
 Chosen classes now show their seat count, and `pnpm test:browser` checks all five

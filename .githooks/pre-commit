@@ -34,7 +34,9 @@ if ! $run check >/tmp/pre-commit-check.log 2>&1; then
 	tail -20 /tmp/pre-commit-check.log >&2
 	exit 1
 fi
-if ! $run test:browser >/tmp/pre-commit-browser.log 2>&1; then
+# Two workers: at full parallelism, after two builds, a loaded laptop can time
+# out tests that pass on their own.
+if ! $run test:browser --workers=2 >/tmp/pre-commit-browser.log 2>&1; then
 	echo "commit blocked: pnpm test:browser failed (see /tmp/pre-commit-browser.log)" >&2
 	tail -20 /tmp/pre-commit-browser.log >&2
 	exit 1

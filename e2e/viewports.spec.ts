@@ -82,3 +82,24 @@ for (const viewport of [VIEWPORTS[0], VIEWPORTS[3]]) {
     });
   });
 }
+
+test.describe("theme toggle", () => {
+  test.use({ viewport: { width: 280, height: 900 }, colorScheme: "light" });
+
+  test("switches between light and dark and remembers the choice", async ({ page }) => {
+    await page.goto("/");
+    const toggle = page.locator("#theme-toggle");
+    await expect(toggle).toBeVisible();
+    const box = await toggle.boundingBox();
+    expect(box!.x + box!.width).toBeLessThanOrEqual(280);
+    const background = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+    const light = await background();
+    await toggle.click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    expect(await background()).not.toBe(light);
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+    await page.locator("#theme-toggle").click();
+    expect(await background()).toBe(light);
+  });
+});
