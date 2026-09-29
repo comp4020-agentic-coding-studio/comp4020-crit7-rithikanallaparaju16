@@ -3,6 +3,15 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`6a555fd`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/6a555fd): crit 7 reflection, log entry for cc85c23
+
+Committed the first draft of `reflections/crit-7.md` (102 words, below the 150 minimum)
+and the pending log entry, then pushed so GitHub matches the laptop.
+
+> push it to github
+
+> add those and push
+
 ## [`cc85c23`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/cc85c23): light/dark switch, live calendar feed, PROCESS.md grammar
 
 Added a remembered light/dark switch (top right) and a subscribed Google/Apple calendar
