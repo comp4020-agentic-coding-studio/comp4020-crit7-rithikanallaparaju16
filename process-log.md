@@ -3,6 +3,16 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`7de6859`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/7de6859): harness rules, commit log, viewport fixes
+
+Wrote CLAUDE.md rules (portrait + landscape viewports, two-window live checks,
+test cases, this log) and fixed what the viewport sweep found: card overflow at
+280px, unused width at 1920px, and options off-screen after tapping Choose in landscape.
+
+> claude.md add these points, check all the viewports (1920×1080 and 390×844, 280x900. with all the updates keep giving me test cases so i can check. for the live classes open 2 ports and chcek. what else do you suggest
+
+> oh, add the side wayy scroll rules as well, because timetable will be accessed side ways for students mostly. and add in clausde to keep adding hashes with a 2 line main info and my prompt every time so i can make the process.md later
+
 ## [`9e18273`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/9e18273): cite the timetable commits in PROCESS.md
 
 Added the two feature commits to PROCESS.md's "How I got here", then pushed all

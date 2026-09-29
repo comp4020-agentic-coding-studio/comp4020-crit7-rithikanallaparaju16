@@ -405,8 +405,18 @@ fieldset {
   font-weight: 600;
 }
 
-.option .seats {
+.option .seats,
+.current .seats {
   display: block;
+}
+
+/* On a chosen class the room matters more, so seats go last. */
+.current:not(.option) .seats {
+  order: 1;
+}
+
+.seat-status {
+  color: var(--muted);
 }
 
 .option.full {

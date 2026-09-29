@@ -102,6 +102,7 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
                 <p>
                   <span class="tag">{c.groupKind}</span>{" "}
                   <span class="lab-status">{lab ? describeSlot(lab) : <em>not chosen yet</em>}</span>
+                  <span class="seat-status">{lab ? ` · ${seats[lab.id]}/${lab.capacity} seats` : ""}</span>
                 </p>
                 <a
                   class:list={["button toggle", { secondary: isOpen }]}
@@ -291,6 +292,9 @@ const defaultHint = "Lectures are already on your week. Choose a lab or tutorial
         const status = card.querySelector(".lab-status")!;
         if (chosen) status.textContent = chosen.dataset.slot ?? "";
         else status.innerHTML = "<em>not chosen yet</em>";
+        card.querySelector(".seat-status")!.textContent = chosen
+          ? ` · ${seats.get(chosen.dataset.activity!)}/${chosen.dataset.capacity} seats`
+          : "";
         const toggle = card.querySelector<HTMLElement>(".toggle")!;
         toggle.classList.toggle("secondary", isOpen);
         toggle.textContent = isOpen ? "Hide options" : chosen ? `Change ${kind}` : `Choose ${kind}`;

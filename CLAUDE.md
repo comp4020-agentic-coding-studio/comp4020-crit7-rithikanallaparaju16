@@ -18,6 +18,9 @@ These are the rules I hold the agent to on this project.
   the scrollbar and hide an overflow.
 - Look at the screenshots, don't just measure. A check that counts elements
   can pass while the page looks broken.
+- `pnpm test:browser` (Playwright, in `e2e/`) must pass: it enforces these
+  viewports automatically. When a layout bug slips past it, add a check there
+  that fails on the bug before fixing it.
 
 ## Check live updates with two windows
 
