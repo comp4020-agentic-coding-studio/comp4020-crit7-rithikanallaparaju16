@@ -3,6 +3,16 @@
 Raw material for PROCESS.md: every commit's hash, two lines on what changed,
 and the prompt(s) behind it, verbatim. Newest first.
 
+## [`cc85c23`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/cc85c23): light/dark switch, live calendar feed, PROCESS.md grammar
+
+Added a remembered light/dark switch (top right) and a subscribed Google/Apple calendar
+feed whose stable per-class IDs make a swapped class disappear on the next sync. The hook
+blocked the first try (tests timed out on an overloaded laptop), and the About page's old Guestbook nav was fixed.
+
+> fix the gramatical errors of process.md then ,add light mode as well and give the option on the top right. then give options to add on google calendar and apple calendar, before adding, delete the prev added calendar timtable part because students might chnage the timetable
+
+> i cant see the what i built part that i gave ypu, add that and also check gramatical mistakes in the next part
+
 ## [`8e58ba2`](https://github.com/comp4020-agentic-coding-studio/comp4020-crit7-rithikanallaparaju16/commit/8e58ba2): block commits while tests are red
 
 The pre-commit hook now runs `pnpm check` and `pnpm test:browser`; a deliberately
